@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Define command-line arguments
+SUBCOMMAND=$1
+RESOURCE=$2
+NAMESPACE=$3
+
+# Retrieve resource usage statistics from Kubernetes
+kubectl $SUBCOMMAND $RESOURCE -n $NAMESPACE | tail -n +2 | while read line
+do
+  # Extract CPU and memory usage from the output
+  NAME=$(echo $line | awk '{print $1}')
+  CPU=$(echo $line | awk '{print $2}')
+  MEMORY=$(echo $line | awk '{print $3}')
+
+  # Output the statistics to the console
+  # "Resource, Namespace, Name, CPU, Memory"
+  if [[ $NAME == "local"* ]]
+  then
+    printf "%s\t%s\t%s\t%s\t%s\t%s\n" "$RESOURCE" "$NAMESPACE" "$NAME" "$CPU" "$MEMORY"
+  else
+    printf "%s\t%s\t%s\t\t%s\t%s\t%s\n" "$RESOURCE" "$NAMESPACE" "$NAME" "$CPU" "$MEMORY"
+  fi
+done
